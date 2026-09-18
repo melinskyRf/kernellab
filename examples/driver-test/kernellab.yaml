@@ -1,0 +1,35 @@
+version: 1
+name: driver-test
+provider: fake
+
+machine:
+  architecture: x86_64
+  cpus: 4
+  memory: 4G
+
+kernel:
+  version: "6.12"
+  config: defconfig
+  modules:
+    - name: my_driver
+      path: ./drivers/my_driver
+
+tests:
+  - name: load-module
+    command: insmod /lib/modules/my_driver.ko
+    timeout: 10s
+
+  - name: verify-loaded
+    command: lsmod | grep my_driver
+    expected_exit_code: 0
+
+  - name: check-dmesg
+    command: dmesg | tail -100
+    failure_patterns:
+      - "BUG:"
+      - "Oops:"
+      - "panic"
+
+  - name: unload-module
+    command: rmmod my_driver
+    timeout: 10s

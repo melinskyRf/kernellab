@@ -1,0 +1,21 @@
+version: 1
+name: basic-lab
+provider: fake
+
+machine:
+  architecture: x86_64
+  cpus: 2
+  memory: 2G
+
+kernel:
+  version: "6.12"
+
+tests:
+  - name: hello-world
+    command: echo "Hello from Kernel Lab!"
+
+  - name: system-info
+    command: uname -a
+
+  - name: check-kernel
+    command: cat /proc/version

@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - kernellab-data:/app/.kernellab
+    environment:
+      - KERNELLAB_DATABASE_URL=sqlite:///./.kernellab/kernellab.db
+      - KERNELLAB_LOG_LEVEL=INFO
+      - KERNELLAB_API_HOST=0.0.0.0
+      - KERNELLAB_API_PORT=8000
+    command: uvicorn kernellab.api.app:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  kernellab-data:

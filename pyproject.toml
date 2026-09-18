@@ -1,0 +1,108 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kernellab"
+version = "0.1.0"
+description = "A reproducible laboratory for kernel and driver development."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{ name = "Kernel Lab Contributors" }]
+keywords = ["kernel", "driver", "development", "testing", "qemu", "virtualization"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "fastapi>=0.115.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "typer>=0.15.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.14.0",
+    "rich>=13.9.0",
+    "pyyaml>=6.0.0",
+    "uvicorn[standard]>=0.32.0",
+    "httpx>=0.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.28.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+]
+
+[project.scripts]
+kernellab = "kernellab.cli.app:app"
+
+[project.urls]
+Homepage = "https://github.com/kernellab/kernellab"
+Documentation = "https://kernellab.dev"
+Repository = "https://github.com/kernellab/kernellab"
+Issues = "https://github.com/kernellab/kernellab/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kernellab"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kernellab"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+    "cli: CLI tests",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.coverage.run]
+source = ["kernellab"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+]
