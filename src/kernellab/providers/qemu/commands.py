@@ -6,7 +6,7 @@ def create_disk(
     format: str = "qcow2",
     size: str | None = None,
 ) -> list[str]:
-    cmd = ["qemu-img", "create", "-f", format, image_path]
+    cmd = ["create", "-f", format, image_path]
     if size:
         cmd.append(size)
     return cmd
@@ -17,7 +17,7 @@ def convert_image(
     output_path: str,
     output_format: str,
 ) -> list[str]:
-    return ["qemu-img", "convert", "-f", "raw", "-O", output_format, input_path, output_path]
+    return ["convert", "-f", "raw", "-O", output_format, input_path, output_path]
 
 
 def create_overlay(
@@ -26,7 +26,6 @@ def create_overlay(
     format: str = "qcow2",
 ) -> list[str]:
     return [
-        "qemu-img",
         "create",
         "-f",
         format,
@@ -48,7 +47,6 @@ def start_vm(
     acceleration: str = "tcg",
 ) -> list[str]:
     cmd = [
-        "qemu-system-x86_64",
         "-m",
         str(memory_mb),
         "-smp",
@@ -67,7 +65,7 @@ def start_vm(
 
     if monitor_port:
         cmd.extend([
-            "-monitor",
+            "-qmp",
             f"tcp:127.0.0.1:{monitor_port},server,nowait",
         ])
 
@@ -82,18 +80,14 @@ def start_vm(
 
 def stop_vm(monitor_port: int) -> list[str]:
     return [
-        "qemu-system-x86_64",
-        "-monitor",
+        "-qmp",
         f"tcp:127.0.0.1:{monitor_port}",
-        "-monitor",
-        "telnet:127.0.0.1:0,server,nowait",
         "-S",
     ]
 
 
 def query_status(monitor_port: int) -> list[str]:
     return [
-        "qemu-system-x86_64",
-        "-monitor",
+        "-qmp",
         f"tcp:127.0.0.1:{monitor_port}",
     ]

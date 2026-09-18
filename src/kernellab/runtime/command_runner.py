@@ -6,6 +6,7 @@ import logging
 import subprocess
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from kernellab.runtime.exceptions import CommandExecutionError, CommandTimeoutError
 
@@ -20,6 +21,13 @@ class CommandResult:
     stdout: str
     stderr: str
     duration: float
+
+
+@dataclass(frozen=True, slots=True)
+class BackgroundProcess:
+    pid: int
+    executable: str
+    args: list[str]
 
 
 class CommandRunner:
@@ -77,6 +85,41 @@ class CommandRunner:
             stderr=result.stderr,
             duration=duration,
         )
+
+    def run_background(
+        self,
+        executable: str,
+        args: list[str],
+        stdout: int | Path | None = None,
+        stderr: int | Path | None = None,
+    ) -> BackgroundProcess:
+        """Start a process in the background (fire-and-forget)."""
+        cmd = [executable, *args]
+        log_line = _safe_log_line(cmd)
+
+        logger.info("Starting background: %s", log_line)
+
+        stdout_file = None
+        stderr_file = None
+        if stdout is not None:
+            stdout_file = open(stdout if isinstance(stdout, (str, Path)) else "/dev/null", "w")  # noqa: SIM115
+        if stderr is not None:
+            stderr_file = open(stderr if isinstance(stderr, (str, Path)) else "/dev/null", "w")  # noqa: SIM115
+
+        try:
+            proc = subprocess.Popen(  # noqa: S603
+                cmd,
+                stdout=stdout_file or subprocess.DEVNULL,
+                stderr=stderr_file or subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except FileNotFoundError as exc:
+            raise CommandExecutionError(
+                log_line, exit_code=-1, stderr=str(exc)
+            ) from exc
+
+        logger.info("Background process started: pid=%d (%s)", proc.pid, log_line)
+        return BackgroundProcess(pid=proc.pid, executable=executable, args=args)
 
 
 def _safe_log_line(cmd: list[str]) -> str:

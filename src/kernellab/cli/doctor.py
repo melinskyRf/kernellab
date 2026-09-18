@@ -8,7 +8,7 @@ from rich.table import Table
 
 from kernellab.cli.output import print_error, print_info, print_success
 
-doctor_app = typer.Typer(help="Check system health and dependencies")
+doctor_app = typer.Typer(help="Check system health and dependencies", invoke_without_command=True)
 console = Console()
 
 
@@ -91,7 +91,7 @@ STATUS_STYLES = {
 }
 
 
-@doctor_app.command("doctor")
+@doctor_app.callback(invoke_without_command=True)
 def doctor() -> None:
     """Check system health and dependencies."""
     table = Table(title="System Health", show_header=True, header_style="bold cyan")

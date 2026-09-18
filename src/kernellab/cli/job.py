@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import typer
 
 from kernellab.cli.output import (
@@ -9,10 +11,13 @@ from kernellab.cli.output import (
     print_table,
 )
 
+if TYPE_CHECKING:
+    from kernellab.application.job_service import JobService
+
 job_app = typer.Typer(help="Manage jobs")
 
 
-def _get_services():
+def _get_services() -> JobService:
     from kernellab.application.job_service import JobService
     from kernellab.persistence.database import DatabaseManager
     from kernellab.persistence.repositories import JobRepository

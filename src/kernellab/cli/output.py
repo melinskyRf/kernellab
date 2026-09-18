@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -39,7 +41,7 @@ def print_table(title: str, columns: list[str], rows: list[list[str]]) -> None:
     console.print(table)
 
 
-def print_lab_detail(lab: dict) -> None:
+def print_lab_detail(lab: dict[str, Any]) -> None:
     lines = [
         f"[bold]Name:[/bold]       {lab['name']}",
         f"[bold]ID:[/bold]         {lab['id']}",
@@ -53,7 +55,7 @@ def print_lab_detail(lab: dict) -> None:
     console.print(Panel("\n".join(lines), title="Lab Details", border_style="cyan"))
 
 
-def print_job_detail(job: dict) -> None:
+def print_job_detail(job: dict[str, Any]) -> None:
     lines = [
         f"[bold]ID:[/bold]         {job['id']}",
         f"[bold]Lab:[/bold]        {job['lab_id']}",

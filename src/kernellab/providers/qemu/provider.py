@@ -5,13 +5,13 @@ import json
 import logging
 import socket
 import time
-from typing import Any
+from typing import Any, cast
 
 from kernellab.providers.base import Provider, ProviderCapabilities, ProviderInfo, ProviderResult
 from kernellab.providers.qemu import commands as qemu
 from kernellab.providers.qemu.discovery import detect
 from kernellab.providers.qemu.parser import parse_qemu_version
-from kernellab.runtime.command_runner import CommandRunner
+from kernellab.runtime.command_runner import CommandResult, CommandRunner
 from kernellab.runtime.exceptions import CommandExecutionError
 from kernellab.runtime.paths import RuntimePaths
 
@@ -24,6 +24,9 @@ class QEMUProvider(Provider):
     def __init__(self) -> None:
         self._discovery = detect()
         self._runner = CommandRunner()
+
+    def info(self) -> ProviderInfo:
+        return self.probe()
 
     def probe(self) -> ProviderInfo:
         return ProviderInfo(
@@ -112,12 +115,12 @@ class QEMUProvider(Provider):
                 monitor_port=monitor_port,
                 acceleration=self._discovery.acceleration,
             )
-            self._run_cmd(
+            serial_path = paths.serial_log(lab_id)
+            self._runner.run_background(
                 self._discovery.system_executable,
                 cmd,
-                logs=logs,
-                timeout=30,
-                check=False,
+                stdout=serial_path,
+                stderr=serial_path,
             )
             logs.append(f"VM started (monitor port: {monitor_port})")
 
@@ -151,9 +154,18 @@ class QEMUProvider(Provider):
                 self._qmp_send(monitor_port, "quit", logs=logs)
                 logs.append("VM forced stop via QMP")
             else:
-                self._qmp_send(monitor_port, "system_powerdown", logs=logs)
-                logs.append("VM ACPI shutdown via QMP")
-                time.sleep(2)
+                try:
+                    self._qmp_send(monitor_port, "system_powerdown", logs=logs)
+                    logs.append("VM ACPI shutdown via QMP")
+                    time.sleep(2)
+                    resp = self._qmp_query(monitor_port, logs=logs)
+                    if resp.get("running", False):
+                        self._qmp_send(monitor_port, "quit", logs=logs)
+                        logs.append("VM force quit (ACPI shutdown ignored)")
+                except Exception:
+                    with contextlib.suppress(Exception):
+                        self._qmp_send(monitor_port, "quit", logs=logs)
+                    logs.append("VM force quit (fallback)")
 
             runtime["state"] = "stopped"
             self._save_runtime(lab_id, runtime)
@@ -219,7 +231,7 @@ class QEMUProvider(Provider):
             return ProviderResult(
                 success=True,
                 message=status_str,
-                data={"status": status_str, "monitor_port": monitor_port},
+                data={"state": status_str, "monitor_port": monitor_port},
                 logs=logs,
             )
         except CommandExecutionError as exc:
@@ -312,7 +324,7 @@ class QEMUProvider(Provider):
         logs: list[str] | None = None,
         timeout: int = 60,
         check: bool = True,
-    ):
+    ) -> CommandResult:
         if logs is None:
             logs = []
         result = self._runner.run(executable, args, timeout=timeout, check=check)
@@ -336,7 +348,7 @@ class QEMUProvider(Provider):
         port: int,
         command: str,
         logs: list[str] | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         if logs is None:
             logs = []
 
@@ -344,29 +356,44 @@ class QEMUProvider(Provider):
         sock.settimeout(5)
         try:
             sock.connect(("127.0.0.1", port))
-            greeting = sock.recv(4096)
-            if logs and greeting:
-                logs.append(f"QMP greeting: {greeting.decode(errors='replace').strip()}")
+            self._qmp_read_all(sock, logs, "greeting")
 
             negotiate = json.dumps({"execute": "qmp_capabilities"}) + "\n"
             sock.sendall(negotiate.encode())
-            resp = sock.recv(4096)
+            self._qmp_read_all(sock, logs, "capabilities")
 
             qmp_cmd = json.dumps({"execute": command}) + "\n"
             sock.sendall(qmp_cmd.encode())
-            resp = sock.recv(4096)
-            result = json.loads(resp.decode())
-            if logs:
-                logs.append(f"QMP {command} response: {resp.decode().strip()}")
-            return result
+            raw = self._qmp_read_all(sock, logs, command)
+
+            last_line = raw.strip().split("\n")[-1] if raw.strip() else "{}"
+            result = json.loads(last_line)
+            return cast("dict[str, Any]", result)
         finally:
             sock.close()
+
+    def _qmp_read_all(self, sock: socket.socket, logs: list[str], label: str) -> str:
+        chunks: list[str] = []
+        while True:
+            try:
+                data = sock.recv(4096)
+                if not data:
+                    break
+                chunks.append(data.decode(errors="replace"))
+                if data.endswith(b"\n"):
+                    break
+            except TimeoutError:
+                break
+        raw = "".join(chunks)
+        if logs and raw.strip():
+            logs.append(f"QMP {label}: {raw.strip()}")
+        return raw
 
     def _qmp_query(
         self,
         port: int,
         logs: list[str] | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         if logs is None:
             logs = []
 
@@ -374,17 +401,19 @@ class QEMUProvider(Provider):
         sock.settimeout(5)
         try:
             sock.connect(("127.0.0.1", port))
-            sock.recv(4096)
+            self._qmp_read_all(sock, logs, "greeting")
 
             negotiate = json.dumps({"execute": "qmp_capabilities"}) + "\n"
             sock.sendall(negotiate.encode())
-            sock.recv(4096)
+            self._qmp_read_all(sock, logs, "capabilities")
 
             qmp_cmd = json.dumps({"execute": "query-status"}) + "\n"
             sock.sendall(qmp_cmd.encode())
-            resp = sock.recv(4096)
-            data = json.loads(resp.decode())
-            return data.get("return", {})
+            raw = self._qmp_read_all(sock, logs, "query-status")
+
+            last_line = raw.strip().split("\n")[-1] if raw.strip() else "{}"
+            data = json.loads(last_line)
+            return cast("dict[str, Any]", data.get("return", {}))
         finally:
             sock.close()
 
@@ -403,4 +432,4 @@ class QEMUProvider(Provider):
                 "lab_id": lab_id,
                 "state": "unknown",
             }
-        return json.loads(runtime_path.read_text())
+        return cast("dict[str, Any]", json.loads(runtime_path.read_text()))

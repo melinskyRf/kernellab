@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 
 from kernellab.domain.enums import JobStatus, JobType
 from kernellab.domain.job import Job
@@ -40,7 +41,7 @@ class JobService:
         exit_code: int | None = None,
         logs: str | None = None,
     ) -> Job:
-        data: dict = {"status": status}
+        data: dict[str, Any] = {"status": status}
         if error is not None:
             data["error"] = error
         if exit_code is not None:

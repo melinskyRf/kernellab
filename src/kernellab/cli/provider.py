@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from kernellab.cli.output import print_error
 
+if TYPE_CHECKING:
+    from kernellab.providers.registry import ProviderRegistry
+
 provider_app = typer.Typer(help="Manage providers")
 console = Console()
 
 
-def _get_registry():
+def _get_registry() -> ProviderRegistry:
     from kernellab.providers.registry import get_provider_registry
     return get_provider_registry()
 

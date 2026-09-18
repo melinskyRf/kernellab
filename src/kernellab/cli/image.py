@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from kernellab.cli.output import print_error, print_success
 
+if TYPE_CHECKING:
+    from kernellab.images.service import ImageService
+
 image_app = typer.Typer(help="Manage VM images")
 console = Console()
 
 
-def _get_service():
+def _get_service() -> ImageService:
     from kernellab.images.repository import ImageRepository
     from kernellab.images.service import ImageService
     from kernellab.persistence.database import DatabaseManager

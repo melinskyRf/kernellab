@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from typing import Any
 
 
 def parse_qemu_version(raw: str) -> str:
@@ -11,7 +12,7 @@ def parse_qemu_version(raw: str) -> str:
     return raw.strip()
 
 
-def parse_qmp_response(raw: str) -> dict:
+def parse_qmp_response(raw: str) -> dict[str, Any]:
     for line in raw.splitlines():
         line = line.strip()
         if not line:

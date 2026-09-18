@@ -25,6 +25,6 @@ class TestDoctorCommand:
             "kernellab.cli.doctor._check_kvm",
             lambda: ("KVM", "SKIP", "test"),
         )
-        result = runner.invoke(app, ["doctor", "doctor"])
+        result = runner.invoke(app, ["doctor"])
         assert result.exit_code == 0
         assert "System Health" in result.output

@@ -19,6 +19,9 @@ def validate() -> None:
     except FileNotFoundError as exc:
         print_error(str(exc))
         raise typer.Exit(1) from exc
+    except Exception as exc:
+        print_error(f"Configuration error: {exc}")
+        raise typer.Exit(1) from exc
 
     errors = validate_config(config)
     if errors:

@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from kernellab.providers.base import Provider, ProviderResult
+from kernellab.providers.base import Provider, ProviderInfo, ProviderResult
 
 
 class FakeProvider(Provider):
+    def info(self) -> ProviderInfo:
+        return ProviderInfo(available=True, version="fake", executable="fake", host_info="fake")
+
     def create(self, config: dict[str, Any]) -> ProviderResult:
         options = config.get("provider_options", {})
         if options.get("fail_on_create"):
@@ -30,7 +33,7 @@ class FakeProvider(Provider):
             data={"machine_id": "fake-machine-001"},
         )
 
-    def stop(self, config: dict[str, Any]) -> ProviderResult:
+    def stop(self, config: dict[str, Any], force: bool = False) -> ProviderResult:
         return ProviderResult(
             success=True,
             message="stopped",
@@ -48,7 +51,7 @@ class FakeProvider(Provider):
         return ProviderResult(
             success=True,
             message="running",
-            data={"status": "running"},
+            data={"state": "running"},
         )
 
     def execute(self, config: dict[str, Any], command: str) -> ProviderResult:

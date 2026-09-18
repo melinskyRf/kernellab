@@ -328,9 +328,9 @@ async def lab_console(
     """Get serial console log."""
     try:
         lab_service.get_lab(lab_id=lab_id)
-        from kernellab.runtime.paths import get_serial_log_path
+        from kernellab.runtime.paths import RuntimePaths
 
-        log_path = get_serial_log_path(lab_id)
+        log_path = RuntimePaths().serial_log(lab_id)
         if not log_path.exists():
             return LabConsoleResponse(
                 lab_id=lab_id,

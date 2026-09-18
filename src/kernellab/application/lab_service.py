@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from kernellab.domain.enums import ProviderType
 from kernellab.domain.lab import Lab
@@ -22,7 +23,7 @@ class LabService:
         name: str,
         description: str | None = None,
         provider: str = "fake",
-        configuration: dict | None = None,
+        configuration: dict[str, Any] | None = None,
     ) -> Lab:
         if not self.validate_lab_name(name):
             raise ValueError(f"Invalid lab name: {name!r}")

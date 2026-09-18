@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import typer
 from rich.console import Console
 from rich.status import Status
@@ -7,12 +9,16 @@ from rich.table import Table
 
 from kernellab.cli.output import (
     print_error,
-    print_info,
     print_lab_detail,
     print_success,
     print_table,
     print_warning,
 )
+
+if TYPE_CHECKING:
+    from kernellab.application.lab_service import LabService
+    from kernellab.application.runtime_service import RuntimeService
+    from kernellab.persistence.database import DatabaseManager
 
 lab_app = typer.Typer(help="Manage labs")
 console = Console()
@@ -37,7 +43,7 @@ tests:
 """
 
 
-def _get_services():
+def _get_services() -> LabService:
     from kernellab.application.lab_service import LabService
     from kernellab.persistence.database import DatabaseManager
     from kernellab.persistence.repositories import LabRepository
@@ -48,7 +54,7 @@ def _get_services():
     return LabService(repo)
 
 
-def _get_runtime_services():
+def _get_runtime_services() -> tuple[LabService, RuntimeService, DatabaseManager]:
     from kernellab.application.job_service import JobService
     from kernellab.application.lab_service import LabService
     from kernellab.application.runtime_service import RuntimeService
@@ -166,6 +172,8 @@ def run(name: str = typer.Argument(..., help="Lab name to run")) -> None:
 @lab_app.command("up")
 def up(name: str = typer.Argument(..., help="Lab name")) -> None:
     """Create lab if needed, then start it (idempotent)."""
+    from kernellab.config.loader import load_config
+
     lab_svc, runtime_svc, db = _get_runtime_services()
 
     try:
@@ -178,30 +186,28 @@ def up(name: str = typer.Argument(..., help="Lab name")) -> None:
             print_error(str(exc))
             raise typer.Exit(1) from exc
 
-    if lab.status.value in ("running",):
-        print_info(f"Lab '{name}' is already running")
-        return
-
-    provider = runtime_svc._registry.get(lab.provider.value)
-    config = {"lab_id": lab.id, **lab.configuration}
+    try:
+        config = load_config()
+    except FileNotFoundError as exc:
+        print_error(str(exc))
+        raise typer.Exit(1) from exc
 
     with Status(f"[dim]Starting lab '{name}'...[/dim]", console=console):
         try:
-            result = provider.start(config)
+            job, logs = runtime_svc.up_lab(config, lab.id)
         except Exception as exc:
             print_error(str(exc))
             raise typer.Exit(1) from exc
 
-    if result.success:
-        print_success(result.message)
-    else:
-        print_error(result.message)
-        raise typer.Exit(1)
+    print_success("Lab started successfully")
+    console.print(f"[bold]Job ID:[/bold] {job.id}\n")
 
 
 @lab_app.command("start")
 def start(name: str = typer.Argument(..., help="Lab name")) -> None:
     """Start a stopped lab."""
+    from kernellab.config.loader import load_config
+
     lab_svc, runtime_svc, db = _get_runtime_services()
 
     try:
@@ -210,17 +216,21 @@ def start(name: str = typer.Argument(..., help="Lab name")) -> None:
         print_error(str(exc))
         raise typer.Exit(1) from exc
 
-    provider = runtime_svc._registry.get(lab.provider.value)
-    config = {"lab_id": lab.id, **lab.configuration}
+    try:
+        config = load_config()
+    except FileNotFoundError as exc:
+        print_error(str(exc))
+        raise typer.Exit(1) from exc
 
     with Status(f"[dim]Starting lab '{name}'...[/dim]", console=console):
-        result = provider.start(config)
+        try:
+            job, logs = runtime_svc.start_lab(config, lab.id)
+        except Exception as exc:
+            print_error(str(exc))
+            raise typer.Exit(1) from exc
 
-    if result.success:
-        print_success(result.message)
-    else:
-        print_error(result.message)
-        raise typer.Exit(1)
+    print_success("Lab started successfully")
+    console.print(f"[bold]Job ID:[/bold] {job.id}\n")
 
 
 @lab_app.command("stop")
@@ -229,6 +239,8 @@ def stop(
     force: bool = typer.Option(False, "--force", "-f", help="Force stop (poweroff)"),
 ) -> None:
     """Stop a running lab."""
+    from kernellab.config.loader import load_config
+
     lab_svc, runtime_svc, db = _get_runtime_services()
 
     try:
@@ -237,22 +249,28 @@ def stop(
         print_error(str(exc))
         raise typer.Exit(1) from exc
 
-    provider = runtime_svc._registry.get(lab.provider.value)
-    config = {"lab_id": lab.id, **lab.configuration}
+    try:
+        config = load_config()
+    except FileNotFoundError as exc:
+        print_error(str(exc))
+        raise typer.Exit(1) from exc
 
     with Status(f"[dim]Stopping lab '{name}'...[/dim]", console=console):
-        result = provider.stop(config, force=force)
+        try:
+            job, logs = runtime_svc.stop_lab(config, lab.id, force=force)
+        except Exception as exc:
+            print_error(str(exc))
+            raise typer.Exit(1) from exc
 
-    if result.success:
-        print_success(result.message)
-    else:
-        print_error(result.message)
-        raise typer.Exit(1)
+    print_success("Lab stopped successfully")
+    console.print(f"[bold]Job ID:[/bold] {job.id}\n")
 
 
 @lab_app.command("destroy")
 def destroy(name: str = typer.Argument(..., help="Lab name")) -> None:
     """Destroy a lab and clean up resources."""
+    from kernellab.config.loader import load_config
+
     lab_svc, runtime_svc, db = _get_runtime_services()
 
     try:
@@ -261,23 +279,29 @@ def destroy(name: str = typer.Argument(..., help="Lab name")) -> None:
         print_error(str(exc))
         raise typer.Exit(1) from exc
 
-    provider = runtime_svc._registry.get(lab.provider.value)
-    config = {"lab_id": lab.id, **lab.configuration}
+    try:
+        config = load_config()
+    except FileNotFoundError as exc:
+        print_error(str(exc))
+        raise typer.Exit(1) from exc
 
     with Status(f"[dim]Destroying lab '{name}'...[/dim]", console=console):
-        result = provider.destroy(config)
-
-    if not result.success:
-        print_error(result.message)
-        raise typer.Exit(1)
+        try:
+            job, logs = runtime_svc.destroy_lab(config, lab.id)
+        except Exception as exc:
+            print_error(str(exc))
+            raise typer.Exit(1) from exc
 
     lab_svc.delete_lab(lab.id)
     print_success(f"Lab '{name}' destroyed and cleaned up")
+    console.print(f"[bold]Job ID:[/bold] {job.id}\n")
 
 
 @lab_app.command("status")
 def status_cmd(name: str = typer.Argument(..., help="Lab name")) -> None:
     """Show VM status from provider."""
+    from kernellab.config.loader import load_config
+
     lab_svc, runtime_svc, db = _get_runtime_services()
 
     try:
@@ -286,10 +310,17 @@ def status_cmd(name: str = typer.Argument(..., help="Lab name")) -> None:
         print_error(str(exc))
         raise typer.Exit(1) from exc
 
-    provider = runtime_svc._registry.get(lab.provider.value)
-    config = {"lab_id": lab.id, **lab.configuration}
+    try:
+        config = load_config()
+    except FileNotFoundError as exc:
+        print_error(str(exc))
+        raise typer.Exit(1) from exc
 
-    result = provider.status(config)
+    try:
+        status_data = runtime_svc.status_lab(config, lab.id)
+    except Exception as exc:
+        print_error(str(exc))
+        raise typer.Exit(1) from exc
 
     table = Table(title=f"Lab Status: {name}", show_header=True, header_style="bold cyan")
     table.add_column("Property", style="bold")
@@ -299,13 +330,10 @@ def status_cmd(name: str = typer.Argument(..., help="Lab name")) -> None:
     table.add_row("Name", lab.name)
     table.add_row("Provider", lab.provider.value)
     table.add_row("DB Status", lab.status.value)
+    table.add_row("VM Status", status_data.get("state", "unknown"))
 
-    if result.success:
-        table.add_row("VM Status", f"[green]{result.message}[/green]")
-        for key, val in result.data.items():
-            table.add_row(key, str(val))
-    else:
-        table.add_row("VM Status", f"[red]{result.message}[/red]")
+    for key, val in status_data.get("data", {}).items():
+        table.add_row(key, str(val))
 
     console.print(table)
 

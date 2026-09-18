@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any
+from typing import Any, cast
 
 from kernellab.providers.base import Provider, ProviderCapabilities, ProviderInfo, ProviderResult
 from kernellab.providers.virtualbox import commands as vbox
 from kernellab.providers.virtualbox.discovery import detect
 from kernellab.providers.virtualbox.parser import parse_vm_info, parse_vm_state
-from kernellab.runtime.command_runner import CommandRunner
+from kernellab.runtime.command_runner import CommandResult, CommandRunner
 from kernellab.runtime.exceptions import CommandExecutionError
 from kernellab.runtime.paths import RuntimePaths
 
@@ -19,6 +19,9 @@ class VirtualBoxProvider(Provider):
     def __init__(self) -> None:
         self._discovery = detect()
         self._runner = CommandRunner()
+
+    def info(self) -> ProviderInfo:
+        return self.probe()
 
     def probe(self) -> ProviderInfo:
         return ProviderInfo(
@@ -292,7 +295,7 @@ class VirtualBoxProvider(Provider):
         logs: list[str] | None = None,
         timeout: int = 60,
         check: bool = True,
-    ):
+    ) -> CommandResult:
         if logs is None:
             logs = []
         result = self._runner.run(
@@ -322,4 +325,4 @@ class VirtualBoxProvider(Provider):
         runtime_path = paths.runtime_json(lab_id)
         if not runtime_path.exists():
             return {"vm_name": f"kernellab-{lab_id}", "lab_id": lab_id, "state": "unknown"}
-        return json.loads(runtime_path.read_text())
+        return cast("dict[str, Any]", json.loads(runtime_path.read_text()))
