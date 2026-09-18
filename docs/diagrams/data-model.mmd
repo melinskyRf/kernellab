@@ -1,0 +1,64 @@
+```mermaid
+erDiagram
+    LAB {
+        string id PK
+        string name UK
+        string description
+        string provider
+        string status
+        json configuration
+        datetime created_at
+        datetime updated_at
+    }
+    
+    JOB {
+        string id PK
+        string lab_id FK
+        string type
+        string status
+        datetime created_at
+        datetime started_at
+        datetime finished_at
+        int exit_code
+        text error
+        text logs
+    }
+    
+    MACHINE {
+        string architecture
+        int cpus
+        string memory
+        string disk
+    }
+    
+    KERNEL {
+        string version
+        string image
+        string source
+        string config
+        string cmdline
+    }
+    
+    ARTIFACT {
+        string id PK
+        string job_id FK
+        string name
+        string path
+        string artifact_type
+        datetime created_at
+    }
+    
+    SNAPSHOT {
+        string id PK
+        string lab_id FK
+        string name
+        string description
+        datetime created_at
+    }
+    
+    LAB ||--o{ JOB : "has"
+    LAB ||--o| MACHINE : "configures"
+    LAB ||--o| KERNEL : "uses"
+    LAB ||--o{ SNAPSHOT : "creates"
+    JOB ||--o{ ARTIFACT : "produces"
+```

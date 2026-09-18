@@ -1,0 +1,49 @@
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI
+    participant LabService
+    participant RuntimeService
+    participant JobService
+    participant ProviderRegistry
+    participant FakeProvider
+    participant Repository
+
+    User->>CLI: kernellab lab run my-driver-lab
+    CLI->>LabService: get_lab(name="my-driver-lab")
+    LabService->>Repository: get_by_name("my-driver-lab")
+    Repository-->>LabService: Lab object
+    LabService-->>CLI: Lab
+    
+    CLI->>RuntimeService: run_lab(config, lab_id)
+    RuntimeService->>JobService: create_job(lab_id, RUN)
+    JobService->>Repository: create(job_data)
+    Repository-->>JobService: Job
+    JobService-->>RuntimeService: Job
+    
+    RuntimeService->>JobService: mark_running(job_id)
+    JobService->>Repository: update(status=RUNNING)
+    
+    RuntimeService->>ProviderRegistry: get("fake")
+    ProviderRegistry-->>RuntimeService: FakeProvider
+    
+    RuntimeService->>FakeProvider: create(config)
+    FakeProvider-->>RuntimeService: ProviderResult(success=True)
+    
+    RuntimeService->>FakeProvider: start(config)
+    FakeProvider-->>RuntimeService: ProviderResult(success=True)
+    
+    loop For each test
+        RuntimeService->>FakeProvider: execute(config, command)
+        FakeProvider-->>RuntimeService: ProviderResult(logs)
+    end
+    
+    RuntimeService->>FakeProvider: destroy(config)
+    FakeProvider-->>RuntimeService: ProviderResult(success=True)
+    
+    RuntimeService->>JobService: mark_success(job_id, logs)
+    JobService->>Repository: update(status=SUCCESS)
+    
+    RuntimeService-->>CLI: (Job, logs)
+    CLI-->>User: Job completed successfully
+```

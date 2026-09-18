@@ -1,0 +1,59 @@
+```mermaid
+gantt
+    title Kernel Lab Roadmap
+    dateFormat  YYYY-MM-DD
+    section Phase 1 - Foundation
+    Project Architecture           :done, p1a, 2026-01-01, 7d
+    CLI (Typer + Rich)             :done, p1b, after p1a, 5d
+    REST API (FastAPI)             :done, p1c, after p1a, 5d
+    Domain Models                  :done, p1d, after p1a, 3d
+    Application Services           :done, p1e, after p1d, 5d
+    Provider System                :done, p1f, after p1e, 3d
+    FakeProvider                   :done, p1g, after p1f, 2d
+    Persistence (SQLAlchemy)       :done, p1h, after p1d, 5d
+    Configuration System           :done, p1i, after p1d, 3d
+    Test Suite                     :done, p1j, after p1e, 7d
+    Documentation                  :done, p1k, after p1j, 3d
+    
+    section Phase 2 - QEMU Runtime
+    QEMU Integration               :p2a, 2026-03-01, 14d
+    VM Lifecycle                   :p2b, after p2a, 7d
+    Disk Image Management          :p2c, after p2a, 5d
+    Serial Console                 :p2d, after p2b, 5d
+    Kernel Boot                    :p2e, after p2c, 7d
+    SSH Communication              :p2f, after p2d, 5d
+    Command Execution              :p2g, after p2f, 5d
+    
+    section Phase 3 - Kernel Workflow
+    Kernel Download                :p3a, 2026-05-01, 7d
+    Kernel Compilation             :p3b, after p3a, 10d
+    Module Compilation             :p3c, after p3b, 5d
+    Module Injection               :p3d, after p3c, 5d
+    Driver Testing                 :p3e, after p3d, 7d
+    Artifact Collection            :p3f, after p3e, 5d
+    
+    section Phase 4 - Recovery
+    Snapshots                      :p4a, 2026-07-01, 7d
+    Restore                        :p4b, after p4a, 5d
+    Panic Detection                :p4c, after p4a, 5d
+    Auto Recovery                  :p4d, after p4c, 5d
+    Test Matrix                    :p4e, after p4d, 7d
+    
+    section Phase 5 - Testing Ecosystem
+    KUnit Integration              :p5a, 2026-09-01, 10d
+    kselftest Integration          :p5b, after p5a, 10d
+    LTP Integration                :p5c, after p5b, 10d
+    CI Integration                 :p5d, after p5c, 7d
+    
+    section Phase 6 - Web Platform
+    Dashboard                      :p6a, 2026-11-01, 14d
+    Live Console                   :p6b, after p6a, 10d
+    Job History                    :p6c, after p6a, 7d
+    Artifact Browser               :p6d, after p6b, 7d
+    
+    section Phase 7 - Distributed
+    Remote Workers                 :p7a, 2027-01-01, 14d
+    Multi-Host Execution           :p7b, after p7a, 10d
+    ARM64 Workers                  :p7c, after p7a, 10d
+    Team Collaboration             :p7d, after p7b, 10d
+```

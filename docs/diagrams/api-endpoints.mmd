@@ -1,0 +1,58 @@
+```mermaid
+graph LR
+    subgraph "REST API Endpoints"
+        direction TB
+        
+        subgraph "Health"
+            H["GET /health"]
+        end
+        
+        subgraph "Labs"
+            L1["POST /api/v1/labs"]
+            L2["GET /api/v1/labs"]
+            L3["GET /api/v1/labs/{id}"]
+            L4["DELETE /api/v1/labs/{id}"]
+            L5["POST /api/v1/labs/{id}/run"]
+        end
+        
+        subgraph "Jobs"
+            J1["GET /api/v1/jobs"]
+            J2["GET /api/v1/jobs/{id}"]
+            J3["GET /api/v1/jobs/{id}/logs"]
+        end
+    end
+    
+    subgraph "CLI Commands"
+        direction TB
+        C1["kernellab init"]
+        C2["kernellab lab create"]
+        C3["kernellab lab list"]
+        C4["kernellab lab show"]
+        C5["kernellab lab delete"]
+        C6["kernellab lab run"]
+        C7["kernellab job list"]
+        C8["kernellab job show"]
+        C9["kernellab logs"]
+        C10["kernellab server"]
+    end
+    
+    C10 --> H
+    C2 --> L1
+    C3 --> L2
+    C4 --> L3
+    C5 --> L4
+    C6 --> L5
+    C7 --> J1
+    C8 --> J2
+    C9 --> J3
+    
+    style H fill:#4CAF50,color:#fff
+    style L1 fill:#2196F3,color:#fff
+    style L2 fill:#2196F3,color:#fff
+    style L3 fill:#2196F3,color:#fff
+    style L4 fill:#2196F3,color:#fff
+    style L5 fill:#FF9800,color:#fff
+    style J1 fill:#9C27B0,color:#fff
+    style J2 fill:#9C27B0,color:#fff
+    style J3 fill:#9C27B0,color:#fff
+```

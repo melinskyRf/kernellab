@@ -110,36 +110,70 @@ tests:
 
 ## Architecture
 
+```mermaid
+graph TB
+    subgraph "Kernel Lab"
+        CLI["CLI<br/>(Typer + Rich)"]
+        API["REST API<br/>(FastAPI)"]
+        
+        subgraph "Application Layer"
+            LS["LabService"]
+            JS["JobService"]
+            RS["RuntimeService"]
+        end
+        
+        subgraph "Domain Layer"
+            Lab["Lab Model"]
+            Job["Job Model"]
+        end
+        
+        subgraph "Provider Layer"
+            PR["ProviderRegistry"]
+            PI["Provider Interface<br/>(ABC)"]
+            FP["FakeProvider"]
+            QEMU["QEMUProvider<br/>(Future)"]
+            VB["VirtualBoxProvider<br/>(Future)"]
+        end
+        
+        subgraph "Persistence Layer"
+            DB["DatabaseManager<br/>(SQLAlchemy)"]
+            LR["LabRepository"]
+            JR["JobRepository"]
+            SQLite["SQLite"]
+        end
+    end
+    
+    CLI --> LS
+    CLI --> JS
+    CLI --> RS
+    API --> LS
+    API --> JS
+    API --> RS
+    
+    LS --> Lab
+    LS --> LR
+    JS --> Job
+    JS --> JR
+    RS --> PR
+    RS --> Job
+    
+    PR --> PI
+    PI --> FP
+    PI --> QEMU
+    PI --> VB
+    
+    LR --> DB
+    JR --> DB
+    DB --> SQLite
+    
+    style CLI fill:#4CAF50,color:#fff
+    style API fill:#2196F3,color:#fff
+    style FP fill:#FF9800,color:#fff
+    style QEMU fill:#9E9E9E,color:#fff
+    style VB fill:#9E9E9E,color:#fff
 ```
-                    ┌─────────────────────┐
-                    │      Kernel Lab     │
-                    └──────────┬──────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              │                │                │
-              ▼                ▼                ▼
-             CLI             API             SDK
-              │                │                │
-              └────────────────┼────────────────┘
-                               │
-                    ┌──────────▼──────────┐
-                    │ Application Layer   │
-                    └──────────┬──────────┘
-                               │
-            ┌──────────────────┼──────────────────┐
-            │                  │                  │
-            ▼                  ▼                  ▼
-       Lab Service        Job Service       Runtime Service
-                                                   │
-                                                   ▼
-                                         Provider Interface
-                                                   │
-                    ┌──────────────────────────────┼──────────────┐
-                    │                              │              │
-                    ▼                              ▼              ▼
-               FakeProvider                    QEMU           VirtualBox
-                  (Phase 1)                   (Phase 2)       (Future)
-```
+
+> 📐 **Diagrams**: See [`docs/diagrams/`](docs/diagrams/) for all architecture diagrams in Mermaid format.
 
 ---
 

@@ -1,0 +1,96 @@
+```mermaid
+graph TD
+    subgraph "kernel-lab/"
+        Root["kernel-lab/"]
+        
+        subgraph "Configuration"
+            PT["pyproject.toml"]
+            MF["Makefile"]
+            DC["docker-compose.yml"]
+            DF["Dockerfile"]
+            GI[".gitignore"]
+            ENV[".env.example"]
+        end
+        
+        subgraph "Documentation"
+            RM["README.md"]
+            LC["LICENSE"]
+            CC["CONTRIBUTING.md"]
+            Docs["docs/"]
+        end
+        
+        subgraph "Source Code"
+            Src["src/kernellab/"]
+            
+            subgraph "CLI"
+                CLI["cli/"]
+            end
+            
+            subgraph "API"
+                API["api/"]
+            end
+            
+            subgraph "Domain"
+                Domain["domain/"]
+            end
+            
+            subgraph "Application"
+                App["application/"]
+            end
+            
+            subgraph "Providers"
+                Providers["providers/"]
+            end
+            
+            subgraph "Persistence"
+                Persist["persistence/"]
+            end
+            
+            subgraph "Config"
+                Config["config/"]
+            end
+            
+            subgraph "Schemas"
+                Schemas["schemas/"]
+            end
+        end
+        
+        subgraph "Tests"
+            Tests["tests/"]
+        end
+        
+        subgraph "Examples"
+            Examples["examples/"]
+        end
+        
+        subgraph "Scripts"
+            Scripts["scripts/"]
+        end
+    end
+    
+    Root --> Configuration
+    Root --> Documentation
+    Root --> Source Code
+    Root --> Tests
+    Root --> Examples
+    Root --> Scripts
+    
+    Src --> CLI
+    Src --> API
+    Src --> Domain
+    Src --> App
+    Src --> Providers
+    Src --> Persist
+    Src --> Config
+    Src --> Schemas
+    
+    style Root fill:#E91E63,color:#fff
+    style CLI fill:#4CAF50,color:#fff
+    style API fill:#2196F3,color:#fff
+    style Domain fill:#FF9800,color:#fff
+    style App fill:#9C27B0,color:#fff
+    style Providers fill:#00BCD4,color:#fff
+    style Persist fill:#795548,color:#fff
+    style Config fill:#607D8B,color:#fff
+    style Schemas fill:#F44336,color:#fff
+```

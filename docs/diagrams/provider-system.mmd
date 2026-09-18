@@ -1,0 +1,59 @@
+```mermaid
+classDiagram
+    class Provider {
+        <<abstract>>
+        +create(config) ProviderResult
+        +start(config) ProviderResult
+        +stop(config) ProviderResult
+        +destroy(config) ProviderResult
+        +status(config) ProviderResult
+        +execute(config, command) ProviderResult
+        +snapshot(config, name) ProviderResult
+        +restore(config, snapshot_id) ProviderResult
+    }
+    
+    class ProviderResult {
+        +bool success
+        +str message
+        +dict data
+        +list~str~ logs
+    }
+    
+    class ProviderRegistry {
+        -dict~str, type~ _providers
+        +register(name, provider_class)
+        +get(name) Provider
+        +list_providers() list~str~
+    }
+    
+    class FakeProvider {
+        +create(config) ProviderResult
+        +start(config) ProviderResult
+        +stop(config) ProviderResult
+        +destroy(config) ProviderResult
+        +status(config) ProviderResult
+        +execute(config, command) ProviderResult
+        +snapshot(config, name) ProviderResult
+        +restore(config, snapshot_id) ProviderResult
+    }
+    
+    class QEMUProvider {
+        <<Future>>
+        +create(config) ProviderResult
+        +start(config) ProviderResult
+        +execute(config, command) ProviderResult
+    }
+    
+    class VirtualBoxProvider {
+        <<Future>>
+        +create(config) ProviderResult
+        +start(config) ProviderResult
+        +execute(config, command) ProviderResult
+    }
+    
+    Provider <|-- FakeProvider
+    Provider <|-- QEMUProvider
+    Provider <|-- VirtualBoxProvider
+    ProviderRegistry o-- Provider : manages
+    ProviderResult -- Provider : returns
+```
