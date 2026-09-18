@@ -83,6 +83,7 @@ markers = [
     "unit: unit tests",
     "integration: integration tests",
     "cli: CLI tests",
+    "real_virtualization: tests requiring real VirtualBox/QEMU",
 ]
 
 [tool.mypy]

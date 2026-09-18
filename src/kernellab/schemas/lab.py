@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from datetime import datetime
 
@@ -32,4 +33,23 @@ class LabListResponse(BaseModel):
 class LabRunResponse(BaseModel):
     job_id: str
     status: str
+    message: str
+
+
+class LabUpResponse(BaseModel):
+    lab_id: str
+    status: str
+    message: str
+
+
+class LabStatusResponse(BaseModel):
+    lab_id: str
+    status: str
+    running: bool
+    details: dict[str, str] = {}
+
+
+class LabConsoleResponse(BaseModel):
+    lab_id: str
+    logs: str
     message: str

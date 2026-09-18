@@ -51,3 +51,78 @@ class InvalidConfigError(KernelLabError):
         self.path = path
         full = f"{message}: {path}" if path else message
         super().__init__(full)
+
+
+class ImageNotFoundError(KernelLabError):
+    def __init__(self, image_id: str):
+        super().__init__(f"Image '{image_id}' not found")
+        self.image_id = image_id
+
+
+class ImageAlreadyExistsError(KernelLabError):
+    def __init__(self, name: str):
+        super().__init__(f"Image '{name}' already exists")
+        self.name = name
+
+
+class HypervisorNotFoundError(KernelLabError):
+    def __init__(self, hypervisor: str = "VirtualBox"):
+        super().__init__(f"Hypervisor '{hypervisor}' is not available on this system")
+        self.hypervisor = hypervisor
+
+
+class ProviderUnavailableError(KernelLabError):
+    def __init__(self, provider: str, reason: str = ""):
+        self.provider = provider
+        msg = f"Provider '{provider}' is unavailable"
+        if reason:
+            msg += f": {reason}"
+        super().__init__(msg)
+
+
+class MachineAlreadyExistsError(KernelLabError):
+    def __init__(self, name: str):
+        super().__init__(f"Machine '{name}' already exists")
+        self.name = name
+
+
+class MachineNotFoundError(KernelLabError):
+    def __init__(self, identifier: str):
+        super().__init__(f"Machine '{identifier}' not found")
+        self.identifier = identifier
+
+
+class MachineStartError(KernelLabError):
+    def __init__(self, name: str, reason: str = ""):
+        self.name = name
+        msg = f"Failed to start machine '{name}'"
+        if reason:
+            msg += f": {reason}"
+        super().__init__(msg)
+
+
+class MachineStopError(KernelLabError):
+    def __init__(self, name: str, reason: str = ""):
+        self.name = name
+        msg = f"Failed to stop machine '{name}'"
+        if reason:
+            msg += f": {reason}"
+        super().__init__(msg)
+
+
+class MachineDestroyError(KernelLabError):
+    def __init__(self, name: str, reason: str = ""):
+        self.name = name
+        msg = f"Failed to destroy machine '{name}'"
+        if reason:
+            msg += f": {reason}"
+        super().__init__(msg)
+
+
+class InvalidImageError(KernelLabError):
+    def __init__(self, path: str, reason: str = ""):
+        self.path = path
+        msg = f"Invalid image: '{path}'"
+        if reason:
+            msg += f": {reason}"
+        super().__init__(msg)

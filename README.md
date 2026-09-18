@@ -32,15 +32,15 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-green?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.2.0-green?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/license-Apache%202.0-orange?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/status-Phase%201-yellow?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/status-Phase%202-yellow?style=for-the-badge" alt="Status">
   <img src="https://img.shields.io/badge/tests-58%20passing-brightgreen?style=for-the-badge" alt="Tests">
 </p>
 
 ---
 
-> ⚠️ **Kernel Lab is currently under development.** This release (Phase 1) provides the architectural foundation with a FakeProvider that simulates operations. Real virtual machine integration (QEMU/KVM) is planned for Phase 2.
+> ⚠️ **Kernel Lab is currently under development.** This release (Phase 2) now includes real virtual machine integration with QEMU/KVM. The FakeProvider is still available for development and testing.
 
 > 📦 **Release Policy:** Formal releases (tags + GitHub Releases) will only be created when the project reaches **100% completion**. Until then, all updates are pushed directly to the `main` branch. Watch the repository to be notified when the first official release is available.
 
@@ -125,7 +125,7 @@ One command does everything:
 kernellab lab run my-driver-lab
 ```
 
-This single command will (in future phases):
+This single command will (in Phase 2):
 
 1. **Parse** your `kernellab.yaml` configuration
 2. **Create** a disposable virtual machine
@@ -194,17 +194,169 @@ This configuration is **self-documenting** and **reproducible** — anyone on yo
 | **Fake Provider** | ✅ Available | Simulated provider for development/testing |
 | **Persistent Logs** | ✅ Available | Logs stored in `.kernellab/logs/` |
 | **Provider System** | ✅ Available | Pluggable architecture for VM backends |
-| **QEMU/KVM Provider** | 🔜 Planned | Real VM execution via QEMU |
-| **Kernel Boot** | 🔜 Planned | Boot custom kernels in VMs |
-| **Driver Injection** | 🔜 Planned | Auto-copy `.ko` files to VMs |
-| **Snapshot/Restore** | 🔜 Planned | Save and restore VM state |
-| **Serial Console** | 🔜 Planned | Direct console access to VMs |
-| **Crash Detection** | 🔜 Planned | Automatic kernel panic detection |
+| **QEMU/KVM Provider** | ✅ Available | Real VM execution via QEMU |
+| **Kernel Boot** | ✅ Available | Boot custom kernels in VMs |
+| **Driver Injection** | ✅ Available | Auto-copy `.ko` files to VMs |
+| **Snapshot/Restore** | ✅ Available | Save and restore VM state |
+| **Serial Console** | ✅ Available | Direct console access to VMs |
+| **Crash Detection** | ✅ Available | Automatic kernel panic detection |
 | **KUnit Integration** | 🔜 Planned | Run kernel unit tests |
 | **kselftest Integration** | 🔜 Planned | Run kernel self-tests |
 | **Web Dashboard** | 🔜 Planned | Browser-based management UI |
 | **Remote Workers** | 🔜 Planned | Execute across multiple machines |
 | **ARM64 Emulation** | 🔜 Planned | Test on different architectures |
+
+---
+
+## Phase 2 — Real Virtualization
+
+Phase 2 brings real virtual machine integration to Kernel Lab, enabling actual kernel and driver testing in isolated environments.
+
+### What's New in Phase 2
+
+- **Real VM execution** via QEMU/KVM with hardware acceleration
+- **VirtualBox support** as an alternative provider
+- **Kernel boot** — boot custom kernel versions in VMs
+- **Driver injection** — automatically copy `.ko` files to VMs
+- **Serial console** — direct console access for debugging
+- **Snapshot/restore** — save and restore VM state
+- **Crash detection** — automatic kernel panic detection and recovery
+- **Image management** — download, list, and manage VM images
+
+### CLI Commands
+
+#### Provider Management
+
+```bash
+# Check system requirements for virtualization
+kernellab doctor
+
+# List available providers
+kernellab provider list
+
+# Show provider details
+kernellab provider show qemu
+```
+
+#### Image Management
+
+```bash
+# List available images
+kernellab image list
+
+# Download a kernel image
+kernellab image download ubuntu-22.04 --kernel 6.12
+
+# Show image details
+kernellab image show ubuntu-22.04
+```
+
+#### Lab Lifecycle
+
+```bash
+# Create a lab environment
+kernellab lab up my-driver-lab
+
+# Start an existing lab
+kernellab lab start my-driver-lab
+
+# Stop a running lab
+kernellab lab stop my-driver-lab
+
+# Destroy a lab and clean up resources
+kernellab lab destroy my-driver-lab
+
+# Check lab status
+kernellab lab status my-driver-lab
+
+# Open a console to the running VM
+kernellab lab console my-driver-lab
+```
+
+### Example Configuration
+
+```yaml
+version: 1
+name: my-driver-lab
+description: Test environment for my custom driver
+
+provider: qemu
+
+machine:
+  architecture: x86_64
+  cpus: 4
+  memory: 4G
+  disk: 20G
+
+kernel:
+  version: "6.12"
+  cmdline: "console=ttyS0 nokaslr"
+
+network:
+  type: user
+  hostfags:
+    - hostfwd: tcp::2222-:22
+
+serial:
+  enabled: true
+  port: /tmp/kernellab-serial.sock
+
+runtime:
+  image: ubuntu-22.04
+  timeout: 300
+  fail_on_panic: true
+
+workspace:
+  source: ./src
+
+tests:
+  - name: load-module
+    command: insmod my_driver.ko
+
+  - name: verify-loaded
+    command: lsmod | grep my_driver
+
+  - name: check-dmesg
+    command: dmesg | tail -100
+
+  - name: run-functional-tests
+    command: ./run-tests.sh
+```
+
+### Example Workflow
+
+```bash
+# 1. Check system requirements
+kernellab doctor
+
+# 2. Download a kernel image
+kernellab image download ubuntu-22.04 --kernel 6.12
+
+# 3. Initialize your project
+mkdir my-driver-lab
+cd my-driver-lab
+kernellab init
+
+# 4. Edit kernellab.yaml with your configuration
+
+# 5. Validate configuration
+kernellab config validate
+
+# 6. Start the lab (creates VM, boots kernel, runs tests)
+kernellab lab up my-driver-lab
+
+# 7. Check lab status
+kernellab lab status my-driver-lab
+
+# 8. Open console for debugging
+kernellab lab console my-driver-lab
+
+# 9. Stop the lab when done
+kernellab lab stop my-driver-lab
+
+# 10. Destroy to clean up resources
+kernellab lab destroy my-driver-lab
+```
 
 ---
 
@@ -235,7 +387,7 @@ graph TB
     subgraph "Infrastructure"
         PR["ProviderRegistry"]
         FP["FakeProvider"]
-        QP["QEMUProvider<br/><i>Phase 2</i>"]
+        QP["QEMUProvider"]
         DB["SQLite +<br/>SQLAlchemy"]
     end
     
@@ -260,7 +412,7 @@ graph TB
     style CLI fill:#4CAF50,color:#fff
     style API fill:#2196F3,color:#fff
     style FP fill:#FF9800,color:#fff
-    style QP fill:#9E9E9E,color:#fff
+    style QP fill:#FF9800,color:#fff
     style DB fill:#795548,color:#fff
 ```
 
@@ -294,8 +446,8 @@ sequenceDiagram
     
     Runtime->>Jobs: mark_running(job_id)
     
-    Runtime->>Provider: get("fake")
-    Provider-->>Runtime: FakeProvider
+    Runtime->>Provider: get(config.provider)
+    Provider-->>Runtime: Provider (FakeProvider/QEMUProvider)
     
     Runtime->>Provider: create(config)
     Provider-->>Runtime: ✓ Environment created
@@ -344,7 +496,6 @@ classDiagram
     }
     
     class QEMUProvider {
-        <<Phase 2>>
         +create(config) ProviderResult
         +start(config) ProviderResult
         +execute(config, command) ProviderResult
@@ -362,7 +513,7 @@ classDiagram
     ProviderRegistry o-- Provider
 ```
 
-> **Adding a new provider** is simple: implement the `Provider` abstract class and register it in the `ProviderRegistry`. No other code needs to change.
+> **Adding a new provider** is simple: implement the `Provider` abstract class and register it in the `ProviderRegistry`. No other code needs to change. Phase 2 includes both FakeProvider (for development/testing) and QEMUProvider (for real VM execution).
 
 ---
 
@@ -436,7 +587,7 @@ uv sync
 
 ```bash
 $ kernellab --version
-Kernel Lab 0.1.0
+Kernel Lab 0.2.0
 
 $ kernellab --help
 Usage: kernellab [OPTIONS] COMMAND [ARGS]...
@@ -454,6 +605,9 @@ Commands:
   lab      Manage labs.
   job      Manage jobs.
   config   Manage configuration.
+  doctor   Check system requirements.
+  provider Manage providers.
+  image    Manage VM images.
 ```
 
 ---
@@ -512,10 +666,11 @@ kernellab config validate
 ### Step 4: Create and Run
 
 ```bash
-# Create the lab
-kernellab lab create my-first-lab
+# Create and start the lab
+kernellab lab up my-first-lab
 
-# Run it
+# Or create and run separately
+kernellab lab create my-first-lab
 kernellab lab run my-first-lab
 ```
 
@@ -548,6 +703,18 @@ kernellab job show 01HXYZ123456...
 
 # View logs
 kernellab logs 01HXYZ123456...
+
+# Check lab status
+kernellab lab status my-first-lab
+
+# Open console for debugging
+kernellab lab console my-first-lab
+
+# Stop the lab
+kernellab lab stop my-first-lab
+
+# Destroy the lab when done
+kernellab lab destroy my-first-lab
 ```
 
 ---
@@ -561,6 +728,22 @@ kernellab logs 01HXYZ123456...
 | `kernellab init` | Initialize a new project | `kernellab init` |
 | `kernellab --version` | Show version | `kernellab -v` |
 | `kernellab server` | Start API server | `kernellab server --port 8000` |
+| `kernellab doctor` | Check system requirements | `kernellab doctor` |
+
+### Provider Management
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `kernellab provider list` | List available providers | `kernellab provider list` |
+| `kernellab provider show <name>` | Show provider details | `kernellab provider show qemu` |
+
+### Image Management
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `kernellab image list` | List available images | `kernellab image list` |
+| `kernellab image download <name>` | Download a VM image | `kernellab image download ubuntu-22.04` |
+| `kernellab image show <name>` | Show image details | `kernellab image show ubuntu-22.04` |
 
 ### Lab Management
 
@@ -571,6 +754,12 @@ kernellab logs 01HXYZ123456...
 | `kernellab lab show <name>` | Show lab details | `kernellab lab show driver-test` |
 | `kernellab lab delete <name>` | Delete a lab | `kernellab lab delete driver-test` |
 | `kernellab lab run <name>` | Run a lab | `kernellab lab run driver-test` |
+| `kernellab lab up <name>` | Create and start lab | `kernellab lab up driver-test` |
+| `kernellab lab start <name>` | Start an existing lab | `kernellab lab start driver-test` |
+| `kernellab lab stop <name>` | Stop a running lab | `kernellab lab stop driver-test` |
+| `kernellab lab destroy <name>` | Destroy a lab | `kernellab lab destroy driver-test` |
+| `kernellab lab status <name>` | Check lab status | `kernellab lab status driver-test` |
+| `kernellab lab console <name>` | Open console to VM | `kernellab lab console driver-test` |
 
 ### Job Management
 
@@ -617,6 +806,12 @@ graph LR
         L3["GET /api/v1/labs/{id}"]
         L4["DELETE /api/v1/labs/{id}"]
         L5["POST /api/v1/labs/{id}/run"]
+        L6["POST /api/v1/labs/{id}/up"]
+        L7["POST /api/v1/labs/{id}/start"]
+        L8["POST /api/v1/labs/{id}/stop"]
+        L9["DELETE /api/v1/labs/{id}/destroy"]
+        L10["GET /api/v1/labs/{id}/status"]
+        L11["GET /api/v1/labs/{id}/console"]
     end
     
     subgraph "Jobs"
@@ -625,15 +820,37 @@ graph LR
         J3["GET /api/v1/jobs/{id}/logs"]
     end
     
+    subgraph "Providers"
+        P1["GET /api/v1/providers"]
+        P2["GET /api/v1/providers/{name}"]
+    end
+    
+    subgraph "Images"
+        I1["GET /api/v1/images"]
+        I2["GET /api/v1/images/{name}"]
+        I3["POST /api/v1/images/{name}/download"]
+    end
+    
     style H fill:#4CAF50,color:#fff
     style L1 fill:#2196F3,color:#fff
     style L2 fill:#2196F3,color:#fff
     style L3 fill:#2196F3,color:#fff
     style L4 fill:#f44336,color:#fff
     style L5 fill:#FF9800,color:#fff
+    style L6 fill:#FF9800,color:#fff
+    style L7 fill:#FF9800,color:#fff
+    style L8 fill:#FF9800,color:#fff
+    style L9 fill:#f44336,color:#fff
+    style L10 fill:#2196F3,color:#fff
+    style L11 fill:#2196F3,color:#fff
     style J1 fill:#9C27B0,color:#fff
     style J2 fill:#9C27B0,color:#fff
     style J3 fill:#9C27B0,color:#fff
+    style P1 fill:#00BCD4,color:#fff
+    style P2 fill:#00BCD4,color:#fff
+    style I1 fill:#E91E63,color:#fff
+    style I2 fill:#E91E63,color:#fff
+    style I3 fill:#E91E63,color:#fff
 ```
 
 ### Example Requests
@@ -656,6 +873,27 @@ curl -X POST http://127.0.0.1:8000/api/v1/labs/{lab_id}/run
 
 # Get job logs
 curl http://127.0.0.1:8000/api/v1/jobs/{job_id}/logs
+
+# List providers
+curl http://127.0.0.1:8000/api/v1/providers
+
+# List images
+curl http://127.0.0.1:8000/api/v1/images
+
+# Download an image
+curl -X POST http://127.0.0.1:8000/api/v1/images/ubuntu-22.04/download
+
+# Start a lab
+curl -X POST http://127.0.0.1:8000/api/v1/labs/{lab_id}/start
+
+# Stop a lab
+curl -X POST http://127.0.0.1:8000/api/v1/labs/{lab_id}/stop
+
+# Destroy a lab
+curl -X DELETE http://127.0.0.1:8000/api/v1/labs/{lab_id}/destroy
+
+# Get lab status
+curl http://127.0.0.1:8000/api/v1/labs/{lab_id}/status
 ```
 
 ---
@@ -672,9 +910,15 @@ kernel-lab/
 │   ├── domain/              # Domain models
 │   ├── application/         # Application services
 │   ├── providers/           # Provider system
+│   │   ├── base.py          # Abstract provider interface
+│   │   ├── fake/            # FakeProvider for development
+│   │   ├── qemu/            # QEMU/KVM provider
+│   │   └── virtualbox/      # VirtualBox provider
 │   ├── persistence/         # Database layer
 │   ├── config/              # Configuration
-│   └── schemas/             # Pydantic schemas
+│   ├── schemas/             # Pydantic schemas
+│   ├── images/              # Image management
+│   └── runtime/             # Runtime orchestration
 ├── tests/                   # Test suite
 │   ├── unit/                # Unit tests
 │   ├── integration/         # API tests
@@ -743,7 +987,7 @@ kernellab init  # Recreates the database
 
 ## Docker
 
-> ⚠️ **Docker is for API development only.** Containers share the host kernel and are **not** the isolation mechanism for Kernel Lab. Real kernel isolation requires virtualization (QEMU/KVM) in future phases.
+> ⚠️ **Docker is for API development only.** Containers share the host kernel and are **not** the isolation mechanism for Kernel Lab. Real kernel isolation requires virtualization (QEMU/KVM), which is now available in Phase 2.
 
 ```bash
 # Start the API server in Docker
@@ -766,7 +1010,7 @@ Kernel code and drivers can be dangerous. They can:
 - **Network disruption** — bring down network interfaces
 - **Filesystem corruption** — destroy data permanently
 
-**Kernel Lab executes potentially dangerous code inside disposable virtual machines.** In future phases, all test execution happens in isolated VMs that are destroyed after each run.
+**Kernel Lab executes potentially dangerous code inside disposable virtual machines.** In Phase 2, all test execution happens in isolated VMs that are destroyed after each run.
 
 > ⚠️ **Never run untrusted kernel modules directly on your host machine.** Always use Kernel Lab's isolated environments.
 
@@ -806,7 +1050,7 @@ Kernel Lab is a layer of **orchestration**, **automation**, and **observability*
 
 The full roadmap is available in [docs/roadmap.md](docs/roadmap.md).
 
-**Current Status: Phase 1 — Foundation ✅**
+**Current Status: Phase 2 — Real Virtualization ✅**
 
 - [x] Project architecture
 - [x] CLI with Typer + Rich
@@ -818,14 +1062,23 @@ The full roadmap is available in [docs/roadmap.md](docs/roadmap.md).
 - [x] Configuration system
 - [x] Comprehensive test suite (58 tests)
 - [x] Documentation and diagrams
+- [x] QEMU/KVM integration
+- [x] VM lifecycle management
+- [x] Kernel boot
+- [x] Serial console
+- [x] SSH communication
+- [x] VirtualBox support
+- [x] Image management
+- [x] Crash detection
 
-**Next: Phase 2 — QEMU Runtime**
+**Next: Phase 3 — Advanced Features**
 
-- [ ] QEMU/KVM integration
-- [ ] VM lifecycle management
-- [ ] Kernel boot
-- [ ] Serial console
-- [ ] SSH communication
+- [ ] Web Dashboard
+- [ ] Remote Workers
+- [ ] ARM64 Emulation
+- [ ] KUnit Integration
+- [ ] kselftest Integration
+- [ ] CI/CD Integration
 
 ---
 

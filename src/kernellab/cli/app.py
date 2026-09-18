@@ -7,9 +7,12 @@ from rich.console import Console
 
 from kernellab import __version__
 from kernellab.cli.config import config_app
+from kernellab.cli.doctor import doctor_app
+from kernellab.cli.image import image_app
 from kernellab.cli.job import job_app
 from kernellab.cli.lab import DEFAULT_CONFIG_TEMPLATE, lab_app
 from kernellab.cli.output import print_error, print_info, print_success, print_warning
+from kernellab.cli.provider import provider_app
 
 console = Console()
 
@@ -22,6 +25,9 @@ app = typer.Typer(
 app.add_typer(lab_app, name="lab")
 app.add_typer(job_app, name="job")
 app.add_typer(config_app, name="config")
+app.add_typer(doctor_app, name="doctor")
+app.add_typer(provider_app, name="provider")
+app.add_typer(image_app, name="image")
 
 
 def _version_callback(value: bool) -> None:

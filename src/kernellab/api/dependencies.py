@@ -10,6 +10,8 @@ from fastapi import Depends
 from kernellab.application.job_service import JobService
 from kernellab.application.lab_service import LabService
 from kernellab.application.runtime_service import RuntimeService
+from kernellab.images.repository import ImageRepository
+from kernellab.images.service import ImageService
 from kernellab.persistence.database import DatabaseManager
 from kernellab.persistence.repositories import JobRepository, LabRepository
 from kernellab.providers.registry import get_provider_registry
@@ -38,6 +40,14 @@ def get_job_service(
     """Create a JobService with dependency injection."""
     repo = JobRepository(db)
     return JobService(repo)
+
+
+def get_image_service(
+    db: Annotated[DatabaseManager, Depends(get_database_manager)],
+) -> ImageService:
+    """Create an ImageService with dependency injection."""
+    repo = ImageRepository(db)
+    return ImageService(repo)
 
 
 def get_runtime_service(

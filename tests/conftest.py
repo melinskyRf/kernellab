@@ -79,3 +79,14 @@ tests:
     config_path = tmp_dir / "kernellab.yaml"
     config_path.write_text(config_content)
     return str(config_path)
+
+@pytest.fixture
+def image_service(tmp_dir):
+    """Provide an ImageService with a temp database."""
+    from kernellab.images.repository import ImageRepository
+    from kernellab.images.service import ImageService
+    from kernellab.persistence.database import DatabaseManager
+    db = DatabaseManager(database_url=f"sqlite:///{tmp_dir / 'images.db'}")
+    db.create_tables()
+    repo = ImageRepository(db)
+    return ImageService(repo)

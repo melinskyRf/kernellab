@@ -13,6 +13,37 @@ class ProviderResult:
     logs: list[str] = field(default_factory=list)
 
 
+@dataclass
+class ProviderInfo:
+    available: bool
+    version: str
+    executable: str
+    host_info: str = ""
+
+
+@dataclass
+class ProviderCapabilities:
+    create: bool = True
+    start: bool = True
+    stop: bool = True
+    destroy: bool = True
+    serial: bool = False
+    snapshots: bool = False
+    guest_exec: bool = False
+    all: bool = False
+
+    def __post_init__(self) -> None:
+        self.all = (
+            self.create
+            and self.start
+            and self.stop
+            and self.destroy
+            and self.serial
+            and self.snapshots
+            and self.guest_exec
+        )
+
+
 class Provider(ABC):
     @abstractmethod
     def create(self, config: dict[str, Any]) -> ProviderResult: ...

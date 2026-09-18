@@ -29,11 +29,13 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    from kernellab.api.routes import health, jobs, labs
+    from kernellab.api.routes import health, images, jobs, labs, providers
 
     app.include_router(health.router)
     app.include_router(labs.router, prefix="/api/v1")
     app.include_router(jobs.router, prefix="/api/v1")
+    app.include_router(images.router, prefix="/api/v1")
+    app.include_router(providers.router, prefix="/api/v1")
 
     return app
 

@@ -52,3 +52,26 @@ class ProviderType(StrEnum):
     VIRTUALBOX = "virtualbox"
     LIBVIRT = "libvirt"
     REMOTE = "remote"
+
+
+class MachineState(StrEnum):
+    """State of a virtual machine."""
+
+    CREATED = "created"
+    STARTING = "starting"
+    RUNNING = "running"
+    STOPPING = "stopping"
+    STOPPED = "stopped"
+    FAILED = "failed"
+    UNKNOWN = "unknown"
+
+
+class ImageFormat(StrEnum):
+    """Virtual machine image formats."""
+
+    OVA = "ova"
+    OVF = "ovf"
+    VDI = "vdi"
+    VMDK = "vmdk"
+    QCOW2 = "qcow2"
+    RAW = "raw"

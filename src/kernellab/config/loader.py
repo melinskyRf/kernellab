@@ -34,6 +34,30 @@ class WorkspaceConfig(BaseModel):
     source: str = "."
 
 
+class PortForward(BaseModel):
+    name: str
+    protocol: str = "tcp"
+    host_port: int
+    guest_port: int
+
+
+class NetworkConfig(BaseModel):
+    mode: str = "nat"
+    forwards: list[PortForward] = []
+
+
+class SerialConfig(BaseModel):
+    enabled: bool = True
+
+
+class RuntimeConfig(BaseModel):
+    headless: bool = True
+
+
+class ImageConfig(BaseModel):
+    name: str | None = None
+
+
 class KernellabConfig(BaseModel):
     version: int = 1
     name: str
@@ -44,10 +68,14 @@ class KernellabConfig(BaseModel):
     workspace: WorkspaceConfig = WorkspaceConfig()
     tests: list[TestConfig] = []
     provider_options: dict[str, str] = {}
+    network: NetworkConfig = NetworkConfig()
+    serial: SerialConfig = SerialConfig()
+    runtime: RuntimeConfig = RuntimeConfig()
+    image: ImageConfig = ImageConfig()
 
     @model_validator(mode="after")
     def validate_version(self) -> "KernellabConfig":
-        if self.version != 1:
+        if self.version not in (1, 2):
             raise ValueError(f"Unsupported config version: {self.version}")
         return self
 
@@ -69,7 +97,7 @@ def validate_config(config: KernellabConfig) -> list[str]:
     if not config.name:
         errors.append("name is required")
 
-    if config.version != 1:
+    if config.version not in (1, 2):
         errors.append(f"Unsupported config version: {config.version}")
 
     if config.machine.cpus <= 0:
