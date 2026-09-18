@@ -42,6 +42,8 @@
 
 > ⚠️ **Kernel Lab is currently under development.** This release (Phase 1) provides the architectural foundation with a FakeProvider that simulates operations. Real virtual machine integration (QEMU/KVM) is planned for Phase 2.
 
+> 📦 **Release Policy:** Formal releases (tags + GitHub Releases) will only be created when the project reaches **100% completion**. Until then, all updates are pushed directly to the `main` branch. Watch the repository to be notified when the first official release is available.
+
 ---
 
 ## Why Kernel Lab?
