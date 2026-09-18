@@ -14,10 +14,28 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.12+-blue.svg" alt="Python">
-  <img src="https://img.shields.io/badge/version-0.1.0-green.svg" alt="Version">
-  <img src="https://img.shields.io/badge/license-Apache%202.0-orange.svg" alt="License">
-  <img src="https://img.shields.io/badge/status-Phase%201-yellow.svg" alt="Status">
+  <img src="https://img.shields.io/badge/python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/fastapi-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/pydantic-v2-000000?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
+  <img src="https://img.shields.io/badge/sqlalchemy-2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy">
+  <img src="https://img.shields.io/badge/typer-0.15+-000000?style=for-the-badge&logo=typer&logoColor=white" alt="Typer">
+  <img src="https://img.shields.io/badge/rich-13.0+-000000?style=for-the-badge&logo=rich&logoColor=white" alt="Rich">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/sqlite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/alembic-1.14+-000000?style=for-the-badge&logo=alembic&logoColor=white" alt="Alembic">
+  <img src="https://img.shields.io/badge/pytest-8.0+-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="pytest">
+  <img src="https://img.shields.io/badge/ruff-0.8+-000000?style=for-the-badge&logo=ruff&logoColor=white" alt="Ruff">
+  <img src="https://img.shields.io/badge/mypy-1.13+-000000?style=for-the-badge&logo=mypy&logoColor=white" alt="mypy">
+  <img src="https://img.shields.io/badge/uv-package%20manager-DE5FE9?style=for-the-badge&logo=uv&logoColor=white" alt="uv">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-green?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/license-Apache%202.0-orange?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/status-Phase%201-yellow?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/tests-58%20passing-brightgreen?style=for-the-badge" alt="Tests">
 </p>
 
 ---
